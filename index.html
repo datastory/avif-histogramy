@@ -25,8 +25,23 @@
     }
     .hist {
         width: 100%;
-        height: 160px;
+        height: auto;
     }
+
+    .axis {
+	  font: 10px sans-serif;
+	}
+
+    .namecol {
+        max-width: 150px;
+    }
+
+	.axis path,
+	.axis line {
+	  display: none;
+	}
+
+    tr:nth-child(odd) {background: #eff3ff}
 </style>
 
 <div id="map"></div>
@@ -41,7 +56,29 @@
         maxZoom: 18,
     }).addTo(map);
 
-    var colScale = d3.scale.linear().domain([0.00005, 0.05]).interpolate(d3.interpolateHcl).range([d3.rgb('#fee0d2'), d3.rgb('#67000d')]);
+    var mnts = [
+        'led',
+        'úno',
+        'břez',
+        'dub',
+        'květ',
+        'čer',
+        'čerc',
+        'srp',
+        'zář',
+        'říj',
+        'list',
+        'pros'
+    ];
+
+    var colScale = d3.scale.linear().domain([
+        0.00034,
+        0.00272,
+        0.00783,
+        0.01499,
+        0.02827,
+        0.04327
+        ]).range(['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15']);
 
     function getCol(v) {
         var share = stats[v.POLE] / stats.sum;
@@ -68,71 +105,89 @@
         }
     }).addTo(map);
 
+    //histogramy
+
+    var margin = {top: 20, right: 0, bottom: 20, left: 0},
+    width = 730 - margin.left - margin.right,
+    height = 100 - margin.top - margin.bottom;
+
+    var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+    var y = d3.scale.linear().range([height, 0]);
+
+    x.domain([...Array(53).keys()].slice(1));
+    y.domain([0, 2]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom")
+        .ticks(2);
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .ticks(0);
+
     function drawHist(id, vals) {
-        var dv = document.createElement('div');
-        dv.id = 'h' + id;
-        dv.className = 'hist';
-        document.getElementById('hists').appendChild(dv);
+        var dv = document.createElement('tr');
+        dv.innerHTML = '<td class="namecol">' + specList[id].Species + ' (' + specList[id].SpeciesSci + ')</td>'
+        + '<td><div class="hist" id="h' + id + '"></td>'
+        document.getElementById('histble').appendChild(dv);
 
-        Highcharts.chart('h' + id, {
-            chart: {
-                type: 'column'
-            },
-            boost: {
-                enabled: true
-            },
-            credits: {
-                enabled: false
-            },
-            title: {
-                text: specList[id].Species
-            },
-            subtitle: {
-                text: specList[id].SpeciesSci
-            },
-            xAxis: {
-                categories: [
-                    'Jan',
-                    'Feb',
-                    'Mar',
-                    'Apr',
-                    'May',
-                    'Jun',
-                    'Jul',
-                    'Aug',
-                    'Sep',
-                    'Oct',
-                    'Nov',
-                    'Dec'
-                ],
-                crosshair: false
-            },
-            yAxis: {
-                min: 0,
-                max: 1,
-                visible: false
-            },
-            tooltip: {
-                followPointer: false,
-                followTouchMove: false
-            },
-            plotOptions: {
-                column: {
-                    pointPadding: 0,
-                    borderWidth: 0.1
-                },
-                series: {
-                    enableMouseTracking: false
+        var svg = d3.select('#h' + id).append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis)
+            .selectAll("text")
+            .text(function (i) {
+                if(((i - 1) % 4) == 0) {
+                    return mnts[Math.floor((i-1)/4)]
+                } else {
+                    return ''
                 }
-            },
-            series: [{
-                animation: false,
-                showInLegend: false,
-                name: 'spc',
-                data: vals
+            })
+            .style("text-anchor", "start")
+            .attr("dx", "0em")
+            .attr("dy", ".55em")
+            .attr("transform", "rotate(0)" )
 
-            }]
-        });
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+
+        svg.selectAll("bar")
+            .data(Array.apply(null, Array(52)).map(Number.prototype.valueOf,1))
+            .enter().append("rect")
+            .style("fill", function(d, i) {
+                if ((i % 4) == 0) {
+                    return 'black';
+                } else {
+                    return 'lightgray'
+                };
+            })
+            .attr("x", function(d, i) { return x(i + 1); }) //doplnit poradi
+            .attr("width", 1)
+            .attr("y", function(d) { return 0; })
+            .attr("height", function(d) { return height; });
+        
+        svg.selectAll("bar")
+            .data(vals)
+            .enter().append("rect")
+            .style("fill", "#31a354")
+            .attr("x", function(d, i) { return x(i + 1); }) //doplnit poradi
+            .attr("width", x.rangeBand())
+            .attr("y", function(d) { return y(d) - height/2; })
+            .attr("height", function(d) { return (height - y(d))*2; });
     };
 
     heatMap.on('click', function(e) {
@@ -142,7 +197,7 @@
                 document.getElementById('hists').innerHTML = '<h2>Čtverec č. ' 
                 + e.sourceTarget.feature.properties.POLE + ' (' 
                 + stats[e.sourceTarget.feature.properties.POLE]
-                + ' listů)</h2>'
+                + ' listů)</h2><table id="histble"></table>'
                 Object.keys(d).forEach(function(k) {
                     if (k == 'wks') { return };
                     drawHist(k, d[k]);
