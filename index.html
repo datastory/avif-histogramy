@@ -52,7 +52,7 @@
     map.scrollWheelZoom.disable();
 
     L.tileLayer('https://toolserver.org/tiles/hikebike/{z}/{x}/{y}.png', {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        attribution: 'Mapové podklady &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> přispěvatelé, Data <a href="http://www.birds.cz/avif/">ČSO AVIF</a>',
         maxZoom: 18,
     }).addTo(map);
 
@@ -72,12 +72,12 @@
     ];
 
     var colScale = d3.scale.linear().domain([
-        0.00034,
-        0.00272,
-        0.00783,
-        0.01499,
-        0.02827,
-        0.04327
+            0.00002,
+            0.00128,
+            0.00381,
+            0.00884,
+            0.01740,
+            0.03454
         ]).range(['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15']);
 
     function getCol(v) {
@@ -114,7 +114,7 @@
     var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
     var y = d3.scale.linear().range([height, 0]);
 
-    x.domain([...Array(53).keys()].slice(1));
+    x.domain([...Array(49).keys()].slice(1));
     y.domain([0, 2]);
 
     var xAxis = d3.svg.axis()
@@ -166,7 +166,7 @@
             .style("text-anchor", "end")
 
         svg.selectAll("bar")
-            .data(Array.apply(null, Array(52)).map(Number.prototype.valueOf,1))
+            .data(Array.apply(null, Array(48)).map(Number.prototype.valueOf,1))
             .enter().append("rect")
             .style("fill", function(d, i) {
                 if ((i % 4) == 0) {
