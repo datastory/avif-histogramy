@@ -20,10 +20,11 @@
     #map { height: 400px; }
     #hists {
         width: 100%;
+        min-height: 50px;
     }
     .hist {
         width: 100%;
-        height: auto;
+        min-height: auto;
     }
 
     .axis {
@@ -40,10 +41,43 @@
 	}
 
     tr:nth-child(odd) {background: #eff3ff}
+
+    .legend {
+        background-color: white;
+        text-align: left;
+        border-radius: 5px;
+        padding: 8px;
+    }
+
+    #grad {
+        width: 20px;
+        height: 60px;
+        
+    }
+
+    #grad {
+        margin-left: 8px;
+        background-image: linear-gradient(#a50f15, #fee5d9);
+    }
+
+    .loader {
+        margin: 20px;
+        border: 10px solid #f3f3f3;
+        border-top: 10px solid #fcae91;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 </style>
 
 <div id="map"></div>
-<div id="hists">Kliknutím do mapy vyberte čtverec.</div>
+<div id="hists"><h2>Kliknutím do mapy vyberte čtverec</h2></div>
 
 <script>
     var map = L.map('map').setView([49.7417517, 15.3350758], 7);
@@ -102,6 +136,16 @@
             return getCol(f.properties)
         }
     }).addTo(map);
+
+    var legend = L.control({position: 'bottomleft'});
+
+    legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'info legend')
+        div.innerHTML = 'víc vycházek<br><div id="grad"></div>méně vycházek'
+        return div;
+    };
+
+    legend.addTo(map);
 
     //histogramy
 
@@ -189,6 +233,7 @@
     };
 
     heatMap.on('click', function(e) {
+        document.getElementById('hists').innerHTML = '<div class="loader"></div>'
         fetch('./stats/' + e.sourceTarget.feature.properties.POLE + '.json')
         .then(function(resp) {
             resp.json().then(function(d) {
