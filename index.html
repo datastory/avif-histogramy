@@ -154,7 +154,7 @@
     height = 100 - margin.top - margin.bottom;
 
     var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
-    var y = d3.scale.linear().range([height, 1]);
+    var y = d3.scale.linear().range([height, 0]);
 
     x.domain([...Array(49).keys()].slice(1));
     y.domain([0, 2]);
@@ -229,7 +229,7 @@
             .attr("x", function(d, i) { return x(i + 1); }) //doplnit poradi
             .attr("width", x.rangeBand())
             .attr("y", function(d) { return y(d) - height/2; })
-            .attr("height", function(d) { return (height - y(d))*2; });
+            .attr("height", function(d) { return Math.ceil((height - y(d)))*2; });
     };
 
     heatMap.on('click', function(e) {
