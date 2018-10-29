@@ -104,12 +104,12 @@
     ];
 
     var colScale = d3.scale.linear().domain([
-            0.00002,
-            0.00128,
-            0.00381,
-            0.00884,
-            0.01740,
-            0.03454
+            0.000133,
+            0.001336,
+            0.003742,
+            0.007619,
+            0.016842,
+            0.032749,
         ]).range(['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15']);
 
     function getCol(v) {
@@ -154,7 +154,7 @@
     height = 100 - margin.top - margin.bottom;
 
     var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
-    var y = d3.scale.linear().range([height, 0]);
+    var y = d3.scale.linear().range([height, 1]);
 
     x.domain([...Array(49).keys()].slice(1));
     y.domain([0, 2]);
